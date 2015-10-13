@@ -124,7 +124,7 @@ class VM {
                     --$this->sp;
                     break;
                 default :
-                    throw new Exception("invalid opcode: " + $opcode + " at ip=" + ($this->ip - 1));
+                    trigger_error("invalid opcode: " . $opcode . " at ip=" . ($this->ip - 1),E_USER_ERROR);
             }
 
             if($this->trace) {
@@ -173,7 +173,13 @@ class VM {
 
         for($i=0; $i <= $this->sp; $i++) {
             $o = $this->stack[$i];
-            $buf[] = " ";
+
+            if($i == 0) {
+                $buf[] = ' ';
+            }else {
+                $buf[] = ", ";
+            }
+
             if($this->isCli()) {
                 $buf[] = $o;
             }else {
@@ -196,7 +202,7 @@ class VM {
         if($this->isCli()) {
             $buf[] = sprintf("%04d:\t%-11s",$this->ip,$opName);
         }else {
-            $buf[] = sprintf("<span style='width:20px;color:#999;margin-right:5px;'>%04d:</span><span style='width:80px;display:inline-block;'>%-11s</span>",$this->ip,$opName);
+            $buf[] = sprintf("<span style='width:20px;color:#999;margin-right:5px;'>%04d:</span><span style='width:80px;display:inline-block;'>%-11s",$this->ip,$opName);
         }
 
         $nargs = Bytecode::$instructions[$opcode]->n;
@@ -214,6 +220,10 @@ class VM {
                 }
                 $buf[] = $s;
             }
+        }
+
+        if(!$this->isCli()) {
+            $buf[] = "</span>";
         }
 
         return implode('',$buf);
