@@ -41,7 +41,7 @@ class Test {
         $vm = new VM(static::$hello, 0, 0);
         $vm->trace = true;
         $vm->exec();
-        $vm->dumpCoreMemory();
+        $vm->dumpCodeMemory();
 
         $vm = new VM(static::$loop, 0, 2);
         $vm->trace = true;
