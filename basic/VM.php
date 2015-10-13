@@ -4,7 +4,7 @@ class VM {
     const TRUE = 1;
     const FALSE = 0;
 
-    //register
+    //registers
     public $ip;          // instruction pointer register
     public $sp = -1;     // stack pointer register
     public $fp = -1;     // frame pointer register
@@ -12,11 +12,11 @@ class VM {
     public $startip = 0;    //where execution begins
 
     //memory
-    public $code = [];
-    public $globals = [];
-    private $globals_max_length;
+    public $code = [];             // word-addressable code memory but still bytecodes.
+    public $globals = [];          // global variable space
+    private $globals_max_length;   // total length of the global space
 
-    public $stack = [];
+    public $stack = [];            // Operand stack, grows upwards
     private $stack_max_length;
 
     public $trace = false;
@@ -43,7 +43,7 @@ class VM {
                 printf("%-35s",$this->disInstr());
             }
 
-            $this->ip++;
+            $this->ip++;  //jump to next instruction or to operand
             switch($opcode) {
                 case IADD :
                     $b = $this->stack[$this->sp--]; //2nd opnd at top of stack
@@ -105,7 +105,8 @@ class VM {
                     $this->globals[$addr] = $this->stack[$this->sp--];
                     break;
                 case PRINTS:
-                    echo $this->stack[$this->sp--]."\n";
+                    echo $this->stack[$this->sp--];
+                    $this->br();
                     break;
                 case POP:
                     --$this->sp;
@@ -115,7 +116,9 @@ class VM {
             }
 
             if($this->trace) {
-                printf("%s\n",$this->stackString());
+                echo $this->stackString();
+                $this->br();
+
             }
 
             $opcode = $this->code[$this->ip];
@@ -126,7 +129,8 @@ class VM {
         }
 
         if($this->trace) {
-            printf("%s\n",$this->stackString());
+            echo $this->stackString();
+            $this->br();
         }
 
         if($this->trace) {
@@ -176,26 +180,39 @@ class VM {
     }
 
     protected function dumpDataMemory() {
-        printf("%s\n","Data memory:");
+        echo "Data memory:";
+        $this->br();
         $addr = 0;
 
         foreach($this->globals as $o) {
-            printf("%04d: %s\n", $addr, $o);
+            printf("%04d: %s", $addr, $o);
+            $this->br();
             $addr++;
         }
 
-        echo "\n";
+        $this->br();
     }
 
-    public function dumpCoreMemory() {
-        printf("%s\n", "Code memory:");
+    public function dumpCodeMemory() {
+        echo "Code memory:";
+        $this->br();
+
         $addr = 0;
 
         foreach($this->code as $o) {
-            printf("%04d: %d\n", $addr, $o);
+            printf("%04d: %d", $addr, $o);
+            $this->br();
             $addr++;
         }
 
-        echo "\n";
+        $this->br();
+    }
+
+    private function br() {
+        if(php_sapi_name() === 'cli') {
+            echo "\n";
+        }else {
+            echo "<br/>";
+        }
     }
 }
