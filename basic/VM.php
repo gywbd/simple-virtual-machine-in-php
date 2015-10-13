@@ -30,6 +30,10 @@ class VM {
 
     public function exec() {
         $this->ip = $this->startip;
+        if($this->trace) {
+            echo "------------------------------------------------------";
+            $this->br();
+        }
         $this->cpu();
     }
 
@@ -40,7 +44,11 @@ class VM {
 
         while($opcode != HALT && $this->ip < count($this->code)) {
             if($this->trace) {
-                printf("%-35s",$this->disInstr());
+                if($this->isCli()) {
+                    printf("%-35s",$this->disInstr());
+                }else {
+                    printf("<p style='margin-bottom:5px;margin-top:5px;'>%s",$this->disInstr());
+                }
             }
 
             $this->ip++;  //jump to next instruction or to operand
@@ -105,8 +113,12 @@ class VM {
                     $this->globals[$addr] = $this->stack[$this->sp--];
                     break;
                 case PRINTS:
-                    echo $this->stack[$this->sp--];
-                    $this->br();
+                    if($this->isCli()) {
+                        printf("%s\t",$this->stack[$this->sp--]);
+                    }else {
+                        echo '<span style="color:blue;margin-right:5px;">'.$this->stack[$this->sp--].'</span>';
+                    }
+                    //$this->br();
                     break;
                 case POP:
                     --$this->sp;
@@ -116,21 +128,34 @@ class VM {
             }
 
             if($this->trace) {
-                echo $this->stackString();
-                $this->br();
-
+                if($this->isCli()) {
+                    echo $this->stackString();
+                    $this->br();
+                }else {
+                    echo $this->stackString();
+                    echo "</p>";
+                }
             }
 
             $opcode = $this->code[$this->ip];
         }
 
         if($this->trace) {
-            printf("%-35s", $this->disInstr());
+            if($this->isCli()) {
+                printf("%-35s", $this->disInstr());
+            }else {
+                printf("<p style='margin-bottom:5px;margin-top:5px;'>%s",$this->disInstr());
+            }
         }
 
         if($this->trace) {
-            echo $this->stackString();
-            $this->br();
+            if($this->isCli()) {
+                echo $this->stackString();
+                $this->br();
+            }else {
+                echo $this->stackString();
+                echo "</p>";
+            }
         }
 
         if($this->trace) {
@@ -140,16 +165,27 @@ class VM {
 
     protected function stackString() {
         $buf = [];
-        $buf[] = 'stack=[';
+        if($this->isCli()) {
+            $buf[] = 'stack=[';
+        }else {
+            $buf[] = '<span style="font-style:italic">stack=[';
+        }
 
         for($i=0; $i <= $this->sp; $i++) {
             $o = $this->stack[$i];
             $buf[] = " ";
-            $buf[] = $o;
+            if($this->isCli()) {
+                $buf[] = $o;
+            }else {
+                $buf[] = '<span style="color:red;">'.$o.'</span>';
+            }
         }
 
-        $buf[] = " ]";
-
+        if($this->isCli()) {
+            $buf[] = " ]";
+        }else {
+            $buf[] = " ]</span>";
+        }
         return implode('',$buf);
     }
 
@@ -157,7 +193,11 @@ class VM {
         $opcode = $this->code[$this->ip];
         $opName = Bytecode::$instructions[$opcode]->name;
         $buf = [];
-        $buf[] = sprintf("%04d:\t%-11s",$this->ip,$opName);
+        if($this->isCli()) {
+            $buf[] = sprintf("%04d:\t%-11s",$this->ip,$opName);
+        }else {
+            $buf[] = sprintf("<span style='width:20px;color:#999;margin-right:5px;'>%04d:</span><span style='width:80px;display:inline-block;'>%-11s</span>",$this->ip,$opName);
+        }
 
         $nargs = Bytecode::$instructions[$opcode]->n;
 
@@ -180,13 +220,25 @@ class VM {
     }
 
     protected function dumpDataMemory() {
-        echo "Data memory:";
         $this->br();
+        if($this->isCli()) {
+            printf("%s","---Data memory:---");
+        }else {
+            printf("<span style='margin-top:5px;display:inline-block;font-style:italic;'>%s</span>","---Data memory:---");
+        }
+        $this->br();
+
         $addr = 0;
 
         foreach($this->globals as $o) {
-            printf("%04d: %s", $addr, $o);
-            $this->br();
+            //printf("%04d: %s", $addr, $o);
+            if($this->isCli()) {
+                printf("%04d: %d", $addr, $o);
+                $this->br();
+            }else {
+                printf("<p style='margin-bottom:5px;margin-top:5px;'><span style='color:#999;width:20px;margin-right:5px;'>%04d:</span><span style='width:80px;display:inline-block;'>%d</span></p>", $addr, $o);
+            }
+
             $addr++;
         }
 
@@ -194,14 +246,23 @@ class VM {
     }
 
     public function dumpCodeMemory() {
-        echo "Code memory:";
+        $this->br();
+        if($this->isCli()) {
+            printf("%s","---Code memory:---");
+        }else {
+            printf("<span style='margin-top:5px;display:inline-block;font-style:italic;'>%s</span>","---Code memory:---");
+        }
         $this->br();
 
         $addr = 0;
 
         foreach($this->code as $o) {
-            printf("%04d: %d", $addr, $o);
-            $this->br();
+            if($this->isCli()) {
+                printf("%04d: %d", $addr, $o);
+                $this->br();
+            }else {
+                printf("<p style='margin-bottom:5px;margin-top:5px;'><span style='color:#999;width:20px;margin-right:5px;'>%04d:</span><span style='width:80px;display:inline-block;'>%d</span></p>", $addr, $o);
+            }
             $addr++;
         }
 
@@ -209,10 +270,14 @@ class VM {
     }
 
     private function br() {
-        if(php_sapi_name() === 'cli') {
+        if($this->isCli()) {
             echo "\n";
         }else {
             echo "<br/>";
         }
+    }
+
+    private function isCli() {
+        return php_sapi_name() === 'cli';
     }
 }
