@@ -166,9 +166,9 @@ class VM {
     protected function stackString() {
         $buf = [];
         if($this->isCli()) {
-            $buf[] = 'stack=[';
+            $buf[] = '-- stack=[';
         }else {
-            $buf[] = '<span style="font-style:italic">stack=[';
+            $buf[] = '<span style="font-style:italic">-- stack=[';
         }
 
         for($i=0; $i <= $this->sp; $i++) {
