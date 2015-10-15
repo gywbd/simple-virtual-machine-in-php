@@ -39,10 +39,6 @@ class Test {
            HALT             //24
     ];
 
-    const FACTORIAL_INDEX = 0;
-    const FACTORIAL_ADDRESS = 0;
-    const MAIN_ADDRESS = 21;
-
     static $factorial = [
 //.def fact: ARGS=1, LOCALS=0           ADDRESS
 //      IF N < 2 RETURN 1
@@ -58,19 +54,16 @@ class Test {
             LOAD, 0,                    //12
             ICONST, 1,                   //14
             ISUB,                        //16
-            CALL, self::FACTORIAL_INDEX,       //17
+            CALL, 0,       //17
             IMUL,                        //19
             RET,                         //20
 //.DEF MAIN: ARGS=0 LOCAL=0
 // PRINT   FACT(1)
             ICONST, 5,                   //21    <-- MAIN METHOD!
-            CALL, self::FACTORIAL_INDEX,    //23
+            CALL, 0,    //23
             PRINTS,                      //25
             HALT                         //26
     ];
-
-    static $factorial_metadata = [];
-
 
     static $f = [
         //                                  Address
@@ -92,8 +85,6 @@ class Test {
         RET
     ];
 
-    static $f_metadata = [];
-
     public static function run() {
         $vm = new VM(static::$hello, 0, 0);
         $vm->trace = true;
@@ -104,13 +95,13 @@ class Test {
         $vm->trace = true;
         $vm->exec();
 
-        static::$factorial_metadata[] = new FuncMetaData('factorial',1,0,self::FACTORIAL_ADDRESS);
-        $vm = new VM(static::$factorial,self::MAIN_ADDRESS,0,static::$factorial_metadata);
+        $metadata = [new FuncMetaData('factorial', 1, 0, 0)];
+        $vm = new VM(static::$factorial, 21, 0, $metadata);
         $vm->trace = true;
         $vm->exec();
 
-        static::$f_metadata[] =  new FuncMetaData("f", 1, 1, 6);
-        $vm = new VM(static::$f, 0, 2, static::$f_metadata);
+        $metadata = [new FuncMetaData("f", 1, 1, 6)];
+        $vm = new VM(static::$f, 0, 2, $metadata);
         $vm->trace = true;
         $vm->exec();
     }
