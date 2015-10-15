@@ -126,7 +126,6 @@ class VM {
                     }else {
                         echo '<span style="color:blue;margin-right:5px;">'.$this->stack[$this->sp--].'</span>';
                     }
-                    //$this->br();
                     break;
                 case POP:
                     --$this->sp;
@@ -146,29 +145,8 @@ class VM {
                     $this->sp -=  $nargs;
                     $this->ip = $addr;      //jump to function
 
-
-
-                    /*
-                    $this->stack[++$this->sp] = $nargs;
-                    $this->stack[++$this->sp] = $this->fp;
-                    $this->stack[++$this->sp] = $this->ip;
-
-                    $this->fp = $this->sp;
-                    $this->ip = $addr;
-                     */
-
                     break;
                 case RET :
-                    /*
-                    $rvalue = $this->stack[$this->sp--];        //pop return value
-                    $this->sp = $this->fp;                      //jump over locals to fp which points at
-                    $this->ip = $this->stack[$this->sp--];      //pop return address, jump to it
-                    $this->fp = $this->stack[$this->sp--];      //restore fp
-                    $nargs = $this->stack[$this->sp--];         //how many args to throw away?
-                    $this->sp -= $nargs;                        //pop args
-                    $this->stack[++$this->sp] = $rvalue;        //leave result on stack
-                     */
-
                     $this->ip = $this->callstack[$this->callsp--]->returnip;
                     break;
                 default :
