@@ -51,7 +51,7 @@ Bytecode::$instructions = [
     new Instruction('gstore',1),
     new Instruction('prints'),
     new Instruction('pop'),
-    new Instruction('call',2), //call addr,nargs
+    new Instruction('call',1), //call addr,nargs
     new Instruction('ret'),
     new Instruction('halt')
 ];
